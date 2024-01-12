@@ -69,7 +69,7 @@ public class PosTxtReader : MonoBehaviour
     private float hipHeight;                // hip의 position.y
     private List<Vector3[]> pos;            // pos.txt 데이터를 보관하는 컨테이너
     private BVHRecorder recorder;           // BVH 저장용 컴포넌트
-    private int[] bones = new int[10] { 1, 2, 4, 5, 7, 8, 11, 12, 14, 15 };         // 부모 bone
+    private int[] bones      = new int[10] { 1, 2, 4, 5, 7,  8, 11, 12, 14, 15 };         // 부모 bone
     private int[] childBones = new int[10] { 2, 3, 5, 6, 8, 10, 12, 13, 15, 16 };   // bones에 해당하는 자식 bone
     private int boneNum = 17;
     private Animator anim;
@@ -96,12 +96,18 @@ public class PosTxtReader : MonoBehaviour
             foreach (string line in lines)
             {
                 string line2 = line.Replace(",", "");
-                string[] str = line2.Split(new string[] { " " }, System.StringSplitOptions.RemoveEmptyEntries); // 스페이스로 분할하고, 빈 문자열은 제거
+                string[] str = line2.Split(new string[] { " " }, 
+                    System.StringSplitOptions.RemoveEmptyEntries); // 스페이스로 분할하고, 빈 문자열은 제거
 
                 Vector3[] vs = new Vector3[boneNum];
                 for (int i = 0; i < str.Length; i += 4)
                 {
-                    vs[(int)(i / 4)] = new Vector3(-float.Parse(str[i + 1]), float.Parse(str[i + 3]), -float.Parse(str[i + 2]));
+                    int n = (int)(i / 4);
+                    float x = -float.Parse(str[i + 1]);
+                    float y =  float.Parse(str[i + 3]);
+                    float z = -float.Parse(str[i + 2]);
+                    vs[n] = new Vector3(x, y, z);
+                    Debug.LogFormat("n:{0}x:{1},y:{2},z:{3}", n, x, y, z);
                 }
                 data.Add(vs);
             }
@@ -142,7 +148,8 @@ public class PosTxtReader : MonoBehaviour
 
         if (boneT[0] == null)
         {
-            ErrorMessage("<color=blue>Error! Failed to get Bone Transform. Confirm wherther animation type of your model is Humanoid</color>");
+            ErrorMessage("<color=blue>Error! Failed to get Bone Transform. " +
+                "Confirm wherther animation type of your model is Humanoid</color>");
             
             return;
         }
@@ -164,7 +171,8 @@ public class PosTxtReader : MonoBehaviour
             // 대상 모델의 회전 초기값
             initRot[b] = boneT[b].rotation;
             // 초기 뼈의 방향에서 계산된 쿼터니언
-            initInv[b] = Quaternion.Inverse(Quaternion.LookRotation(boneT[b].position - boneT[cb].position, initForward));
+            initInv[b] = Quaternion.Inverse(
+                Quaternion.LookRotation(boneT[b].position - boneT[cb].position, initForward));
         }
     }
     
@@ -350,7 +358,7 @@ public class PosTxtReader : MonoBehaviour
         }
 
         // 얼굴 방향을 위로 조절. 양 어깨를 잇는 선을 축으로 회전
-        boneT[8].rotation = Quaternion.AngleAxis(headAngle, boneT[11].position - boneT[14].position) * boneT[8].rotation;
+        //boneT[8].rotation = Quaternion.AngleAxis(headAngle, boneT[11].position - boneT[14].position) * boneT[8].rotation;
 
         if (saveMotion && recorder != null)
         {
